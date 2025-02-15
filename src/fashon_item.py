@@ -1,12 +1,12 @@
 import os
 import requests
-from bs4 import BeautifulSoup
+from common import scrape_page
 
 class FashionItem:
     def __init__(self, url, pre_scrape=True):
         self.item_id = url.split('/')[-2]
         if pre_scrape:
-            self.soup = self.scrape_fashion_site(url)
+            self.soup = scrape_page(url)
             self.item_name = self.soup.find('h1').text
             self.brand_name = self.get_brand_name()
             self.category_list = self.get_category()
@@ -23,17 +23,6 @@ class FashionItem:
             self.explain = None
             self.coordinate_url_list = None
             self.img_filename = None
-
-    def scrape_fashion_site(self, base_url):
-        # 保存用のディレクトリ作成
-        if not os.path.exists('fashion_images'):
-            os.makedirs('fashion_images')
-        
-        # ページへのリクエスト
-        response = requests.get(base_url)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        
-        return soup
 
     def get_brand_name(self):
         
