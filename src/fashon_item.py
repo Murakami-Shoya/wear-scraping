@@ -25,46 +25,57 @@ class FashionItem:
             self.img_filename = None
 
     def get_brand_name(self):
-        
-        # 「ブランド:」というテキストを含むspanタグを探す
-        brand_span = self.soup.find('span', text='ブランド:')
-        if brand_span:
-            # 見つかったspanタグの次のaタグを取得
-            brand_link = brand_span.find_next('a')
-            
-            if brand_link:
-                return brand_link.text
-        return None
+        try:
+            brand_link = self.soup.find('span', text='ブランド:').find_next('a')
+            return brand_link.text if brand_link else None
+        except AttributeError:
+            return None
 
     def save_fist_img(self):
-        img = self.soup.find('img')
-        if img:
-            # 画像をダウンロード
-            img_url = img['src']
+        try:
+            img_url = self.soup.find('img')['src']
             img_response = requests.get(img_url)
             with open(f"fashion_images/{self.img_filename}", 'wb') as f:
                 f.write(img_response.content)
             return self.img_filename
-        return None
+        except (AttributeError, KeyError, requests.RequestException):
+            return None
     
     def get_category(self):
-        category_list = []
-        for category in self.soup.find('dt', text='カテゴリー').find_next('dd').find_all('a'):
-            category_list.append(category.text)
-        return category_list
+        try:
+            return [category.text for category in self.soup.find('dt', text='カテゴリー').find_next('dd').find_all('a')]
+        except AttributeError:
+            return None
 
     def get_keyword(self):
-        keyword_list = []
-        for keyword in self.soup.find('dt', text='キーワード').find_next('dd').find_all('a'):
-            keyword_list.append(keyword.text)
-        return keyword_list
+        try:
+            return [keyword.text for keyword in self.soup.find('dt', text='キーワード').find_next('dd').find_all('a')]
+        except AttributeError:
+            return None
 
     def get_explain(self):
-        self.explain = self.soup.find('h2', text='アイテム説明').find_next('p').text
-        return self.explain
+        try:
+            return self.soup.find('h2', text='アイテム説明').find_next('p').text
+        except AttributeError:
+            return None
     
     def get_coordinate(self):
-        coordinate_url_list = []
-        for coordinate in self.soup.find(text='着用コーディネート').find_next('ul').find_all('a'):
-            coordinate_url_list.append(coordinate['href'])
-        return coordinate_url_list
+        try:
+            return [coordinate['href'] for coordinate in self.soup.find(text='着用コーディネート').find_next('ul').find_all('a')]
+        except AttributeError:
+            return None
+        
+if __name__ == '__main__':
+    # ファッションアイテムのURL
+    url = 'https://wear.jp/item/85859447/'
+
+    # ファッションアイテムのスクレイピング
+    fashion_item = FashionItem(url)
+    print(fashion_item.item_name)
+    print(fashion_item.brand_name)
+    print(fashion_item.category_list)
+    print(fashion_item.keyword)
+    print(fashion_item.explain)
+    print(fashion_item.coordinate_url_list)
+    print(fashion_item.img_filename)
+    fashion_item.save_fist_img()
