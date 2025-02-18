@@ -55,7 +55,8 @@ class FashionItem:
 
     def get_explain(self):
         try:
-            return self.soup.find('h2', text='アイテム説明').find_next('p').text
+            # 不要な改行（\t\n\r\f\v）を削除
+            return self.soup.find('h2', text='アイテム説明').find_next('p').text.replace('\n', '').replace('\t', '').replace('\r', '').replace('\f', '').replace('\v', '').replace('\u3000', '')
         except AttributeError:
             return None
     
